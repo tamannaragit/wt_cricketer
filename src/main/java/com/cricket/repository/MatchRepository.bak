@@ -1,0 +1,112 @@
+package com.cricket.repository;
+
+import com.cricket.entity.Match;
+import com.cricket.entity.PlayerStats;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+@Repository
+public class MatchRepository {
+
+    private final Map<Long, Match> matches = new ConcurrentHashMap<>();
+    private final AtomicLong sequence = new AtomicLong(1);
+
+    private final Map<String, PlayerStats> playerStatsMap = new ConcurrentHashMap<>();
+    private final AtomicLong playerSequence = new AtomicLong(1);
+
+    public MatchRepository() {
+        initializeSampleMatches();
+    }
+
+    private void initializeSampleMatches() {
+        Match m1 = Match.builder()
+                .matchId("MCC-2026-001")
+                .teamA("Dubai Panthers")
+                .teamB("Karachi Kings")
+                .tournament("PSL 2026")
+                .matchStatus("LIVE")
+                .totalRuns(148)
+                .wickets(5)
+                .overs(13.2)
+                .currentRunRate(11.21)
+                .matchStartedAt(LocalDateTime.now().minusHours(2))
+                .lastBallTime(LocalDateTime.now().minusSeconds(45))
+                .build();
+
+        m1.addBallToLog("V Kohli", "SL Malinga", 1, "RUN", "NONE");
+        m1.addBallToLog("S Rohit", "RU Jadeja", 2, "RUN", "NONE");
+        m1.addBallToLog("MJ Smolko", "Kryn Krouse", 0, "RUN", "NONE");
+
+        Match m2 = Match.builder()
+                .matchId("ICC-2026-002")
+                .teamA("AUS A")
+                .teamB("NZ B")
+                .tournament("ICC World Cup Qualifier")
+                .matchStatus("LIVE")
+                .totalRuns(112)
+                .wickets(6)
+                .overs(11.4)
+                .currentRunRate(9.82)
+                .matchStartedAt(LocalDateTime.now().minusHours(1))
+                .lastBallTime(LocalDateTime.now().minusSeconds(30))
+                .build();
+
+        Match m3 = Match.builder()
+                .matchId("CC-2026-003")
+                .teamA("Bristol Bears")
+                .teamB("Leeds Knights")
+                .tournament("County Championship")
+                .matchStatus("COMPLETED")
+                .totalRuns(345)
+                .wickets(8)
+                .overs(50)
+                .currentRunRate(6.90)
+                .matchStartedAt(LocalDateTime.now().minusDays(2))
+                .lastBallTime(LocalDateTime.now().minusHours(22))
+                .build();
+
+        Match m4 = Match.builder()
+                .matchId("ICC-2026-004")
+                .teamA("India A")
+                .teamB("Australia A")
+                .tournament("Australia A Tour")
+                .matchStatus("SCHEDULED")
+                .totalRuns(0)
+                .wickets(0)
+                .overs(0)
+                .currentRunRate(0.0)
+                .matchStartedAt(LocalDateTime.now().plusDays(2))
+                .lastBallTime(LocalDateTime.now())
+                .build();
+
+        matches.put(m1.getId(), m1);
+        matches.put(m2.getId(), m2);
+        matches.put(m3.getId(), m3);
+        matches.put(m4.getId(), m4);
+
+        initializePlayerStats();
+    }
+
+    private void initializePlayerStats() {
+        PlayerStats[] stats = {
+                PlayerStats.builder().id(playerSequence.getAndIncrement()).playerName("V Kohli").team("Dubai Panthers").role("Batsman").runsScored(452).wicketsTaken(0).economy(0.0).strikeRate(112.5).matchesPlayed(12).build(),
+                PlayerStats.builder().id(playerSequence.getAndIncrement()).playerName("SL Malinga").team("Dubai Panthers").role("Bowler").runsScored(120).wicketsTaken(28).economy(6.5).strikeRate(0.0).matchesPlayed(12).build(),
+                PlayerStats.builder().id(playerSequence.getAndIncrement()).playerName("S Rohit").team("Dubai Panthers").role("Batsman").runsScored(310).wicketsTaken(0).economy(0.0).strikeRate(88.3).matchesPlayed(12).build(),
+                PlayerStats.builder().id(playerSequence.getAndIncrement()).playerName("MJ Smolko").team("Dubai Panthers").role("All-rounder").runsScored(280).wicketsTaken(15).economy(7.2).strikeRate(75.6).matchesPlayed(12).build(),
+                PlayerStats.builder().id(playerSequence.getAndIncrement()).playerName("Kryn Krouse").team("Dubai Panthers").role("Bowler").runsScored(90).wicketsTaken(22).economy(6.8).strikeRate(0.0).matchesPlayed(12).build(),
+                PlayerStats.builder().id(playerSequence.getAndIncrement()).playerName("R Jadeja").team("Karachi Kings").role("All-rounder").runsScored(345).wicketsTaken(18).economy(7.1).strikeRate(92.4).matchesPlayed(12).build(),
+                PlayerStats.builder().id(playerSequence.getAndIncrement()).playerName("Shakib Al Hasan").team("Karachi Kings").role("All-rounder").runsScored(380).wicketsTaken(25).economy(6.8).strikeRate(105.3).matchesPlayed(12).build(),
+                PlayerStats.builder().id(playerSequence.getAndIncrement()).playerName("Rashid Khan").team("Karachi Kings").role("Bowler").runsScored(60).wicketsTaken(35).economy(5.9).strikeRate(0.0).matchesPlayed(12).build(),
+                PlayerStats.builder().id(playerSequence.getAndIncrement()).playerName("David Warner").team("AUS A").role("Batsman").runsScored(410).wicketsTaken(0).economy(0.0).strikeRate(120.5).matchesPlayed(12).build(),
+                PlayerStats.builder().id(playerSequence.getAndIncrement()).playerName("Mitchell Santner").team("NZ B").role("All-rounder").runsScored(195).wicketsTaken(32).economy(6.2).strikeRate(85.7).matchesPlayed(12).build()
+        };
+
+        for (PlayerStats p : stats) {
+            playerStatsMap.put(p.getPlayerName(), p);
+        }
+    }
+}

@@ -1,0 +1,302 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CRICKET SCORE CENTRAL - Live Scores &amp; Stats</title>
+    <style>
+        body {
+            background-color: #C0C0C0;
+            color: #000000;
+            font-family: "Times New Roman", Times, serif;
+            margin: 10px;
+        }
+        h1, h2, h3 {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 5px 0;
+        }
+        a {
+            color: #0000FF;
+            text-decoration: underline;
+        }
+        a:visited {
+            color: #800080;
+        }
+        .header-box {
+            background-color: #000080;
+            color: #FFFFFF;
+            padding: 10px;
+            border: 2px solid #000000;
+            text-align: center;
+        }
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #FFFFFF;
+        }
+        table, th, td {
+            border: 1px solid #000000;
+        }
+        th {
+            background-color: #999999;
+            color: #000000;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            padding: 4px;
+        }
+        td {
+            padding: 6px;
+            font-size: 14px;
+        }
+        .status-live {
+            background-color: #FF0000;
+            color: #FFFFFF;
+            font-weight: bold;
+            padding: 2px 4px;
+        }
+        .status-completed {
+            background-color: #008000;
+            color: #FFFFFF;
+            font-weight: bold;
+            padding: 2px 4px;
+        }
+        .btn {
+            background-color: #D4D0C8;
+            border: 2px outset #FFFFFF;
+            color: #000000;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 3px 8px;
+            cursor: pointer;
+        }
+        .btn:active {
+            border-style: inset;
+        }
+        .panel {
+            background-color: #ECECEC;
+            border: 1px solid #000000;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Banner -->
+    <div class="header-box">
+        <h1 style="margin:0;">CRICKET SCORE CENTRAL '98</h1>
+        <small>Real-time Teletext Match Tracking &amp; Player Statistics</small>
+    </div>
+
+    <marquee behavior="scroll" direction="left" bgcolor="#FFFF00" style="border: 1px solid #000; font-family: Courier New; margin-top: 5px; font-weight: bold;">
+        WELCOME TO CRICKET SCORE CENTRAL! LIVE MATCH UPDATES AUTO-REFRESH EVERY 3 SECONDS...
+    </marquee>
+
+    <hr size="3" color="#000000">
+
+    <table width="100%" cellpadding="5" cellspacing="0" border="0">
+        <tr valign="top">
+            <!-- Left Sidebar Navigation -->
+            <td width="22%" bgcolor="#D3D3D3" style="border: 1px solid #000000;">
+                <h3 style="background-color: #000080; color: #FFF; padding: 2px; margin-top:0;">Navigation</h3>
+                <ul>
+                    <li><a href="#" onclick="loadActiveMatches(); return false;">Live Matches</a></li>
+                    <li><a href="#" onclick="loadRecentMatches(); return false;">Recent Summaries</a></li>
+                    <li><a href="#" onclick="loadAllMatches(); return false;">All Matches</a></li>
+                    <li><a href="#" onclick="loadPlayerStats(); return false;">Player Database</a></li>
+                </ul>
+                <hr>
+                <div align="center">
+                    <p><b>[ BEST VIEWED IN ]</b><br>
+                    <font size="2">Netscape Navigator 4.0<br>or Internet Explorer 5.0<br>800x600 Resolution</font></p>
+                </div>
+            </td>
+
+            <!-- Main Content Area -->
+            <td width="78%">
+                <!-- Active Matches Display -->
+                <div class="panel">
+                    <h2 style="color: #000080;">Match Scoreboard</h2>
+                    <div id="matchesContainer">Loading live score data...</div>
+                </div>
+
+                <!-- Simulation Control Panel -->
+                <div class="panel">
+                    <h3>[ Sim-Ball Controller ]</h3>
+                    <form id="simForm" onsubmit="simulateBall(event)">
+                        <label for="matchSelect"><b>Select Match:</b></label>
+                        <select id="matchSelect" style="font-family: Courier New;"></select>
+                        &nbsp;&nbsp;
+                        <label for="runsInput"><b>Runs:</b></label>
+                        <input type="number" id="runsInput" min="0" max="6" value="1" style="width: 40px;">
+                        &nbsp;&nbsp;
+                        <label for="wicketInput"><b>Wicket?</b></label>
+                        <input type="checkbox" id="wicketInput">
+                        &nbsp;&nbsp;
+                        <button type="submit" class="btn">DELIVER BALL</button>
+                    </form>
+                </div>
+
+                <!-- Player Stats Section -->
+                <div class="panel">
+                    <h2 style="color: #000080;">Player Statistics Directory</h2>
+                    <div id="playerStatsContainer">Click "Player Database" to view player stats.</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <hr size="2" color="#000000">
+    <div align="center">
+        <font size="2">
+            [ <a href="#" onclick="loadActiveMatches(); return false;">Home</a> ] | 
+            [ <a href="#" onclick="loadPlayerStats(); return false;">Stats</a> ] | 
+            [ <a href="#top">Top of Page</a> ]
+            <br>
+            Copyright &copy; 1998 Cricket Score Central Network. All Rights Reserved.
+        </font>
+    </div>
+
+    <!-- JavaScript REST Logic -->
+    <script>
+        const API_BASE = '/api';
+
+        // Load active matches on startup
+        window.onload = function() {
+            loadActiveMatches();
+            loadMatchDropdown();
+            setInterval(loadActiveMatches, 3000); // 3-second polling
+        };
+
+        function loadActiveMatches() {
+            fetch(`${API_BASE}/matches/active`)
+                .then(res => res.json())
+                .then(data => renderMatches(data))
+                .catch(err => console.error(err));
+        }
+
+        function loadAllMatches() {
+            fetch(`${API_BASE}/matches`)
+                .then(res => res.json())
+                .then(data => renderMatches(data))
+                .catch(err => console.error(err));
+        }
+
+        function loadRecentMatches() {
+            fetch(`${API_BASE}/matches/recent`)
+                .then(res => res.json())
+                .then(data => renderMatches(data))
+                .catch(err => console.error(err));
+        }
+
+        function renderMatches(matches) {
+            const container = document.getElementById('matchesContainer');
+            if (!matches || matches.length === 0) {
+                container.innerHTML = '<p><b>No matches found.</b></p>';
+                return;
+            }
+
+            let html = `<table class="main-table">
+                <tr>
+                    <th>ID</th>
+                    <th>Match Title</th>
+                    <th>Score (Runs/Wkts)</th>
+                    <th>Overs</th>
+                    <th>Run Rate</th>
+                    <th>Status</th>
+                </tr>`;
+
+            matches.forEach(m => {
+                const statusBadge = m.status === 'LIVE' 
+                    ? `<span class="status-live">LIVE</span>` 
+                    : `<span class="status-completed">${m.status}</span>`;
+
+                html += `<tr>
+                    <td align="center">#${m.id}</td>
+                    <td><b>${m.teamA || m.team1 || 'Team A'} vs ${m.teamB || m.team2 || 'Team B'}</b></td>
+                    <td align="center"><b>${m.totalRuns !== undefined ? m.totalRuns : m.runs || 0} / ${m.wickets || 0}</b></td>
+                    <td align="center">${m.overs || 0.0}</td>
+                    <td align="center">${m.currentRunRate || m.runRate || '0.0'}</td>
+                    <td align="center">${statusBadge}</td>
+                </tr>`;
+            });
+
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function loadMatchDropdown() {
+            fetch(`${API_BASE}/matches/active`)
+                .then(res => res.json())
+                .then(matches => {
+                    const select = document.getElementById('matchSelect');
+                    select.innerHTML = '';
+                    matches.forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m.id;
+                        opt.textContent = `Match #${m.id}: ${m.teamA || m.team1} vs ${m.teamB || m.team2}`;
+                        select.appendChild(opt);
+                    });
+                })
+                .catch(err => console.error(err));
+        }
+
+        function simulateBall(e) {
+            e.preventDefault();
+            const matchId = document.getElementById('matchSelect').value;
+            const runs = document.getElementById('runsInput').value;
+            const wicket = document.getElementById('wicketInput').checked;
+
+            if (!matchId) {
+                alert('Please select a live match!');
+                return;
+            }
+
+            fetch(`${API_BASE}/matches/${matchId}/update?runs=${runs}&wickets=${wicket ? 1 : 0}&batsman=Batsman&bowler=Bowler`, {
+                method: 'POST'
+            })
+            .then(() => {
+                loadActiveMatches();
+            })
+            .catch(err => console.error(err));
+        }
+
+        function loadPlayerStats() {
+            fetch(`${API_BASE}/player-stats`)
+                .then(res => res.json())
+                .then(players => {
+                    const container = document.getElementById('playerStatsContainer');
+                    if (!players || players.length === 0) {
+                        container.innerHTML = '<p>No player stats available.</p>';
+                        return;
+                    }
+
+                    let html = `<table class="main-table">
+                        <tr>
+                            <th>Player Name</th>
+                            <th>Team</th>
+                            <th>Runs</th>
+                            <th>Wickets</th>
+                            <th>Strike Rate</th>
+                            <th>Economy</th>
+                        </tr>`;
+
+                    players.forEach(p => {
+                        html += `<tr>
+                            <td><b>${p.playerName || p.name}</b></td>
+                            <td>${p.team || '-'}</td>
+                            <td align="right">${p.runs || p.totalRuns || 0}</td>
+                            <td align="right">${p.wickets || 0}</td>
+                            <td align="right">${p.strikeRate || '0.0'}</td>
+                            <td align="right">${p.economy || '0.0'}</td>
+                        </tr>`;
+                    });
+
+                    html += `</table>`;
+                    container.innerHTML = html;
+                })
+                .catch(err => console.error(err));
+        }
+    </script>
+</body>
+</html>
